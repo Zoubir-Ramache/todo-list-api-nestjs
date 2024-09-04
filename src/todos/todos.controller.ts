@@ -1,9 +1,11 @@
-import { Controller , Post  , Body, Get, Patch, Param, ParseIntPipe} from '@nestjs/common';
-import { CreateTodoDto } from './Dto/createTodoDto';
+import { Controller , Post  , Body, Get, Patch, Param, ParseIntPipe , UseGuards} from '@nestjs/common';
 import { Todos } from './todos';
-import { UpdateTodoDto } from './Dto/updateTodoDto';
 import { ApiParam  } from '@nestjs/swagger';
+import { CreateTodosDto } from './dto/create-todos.dto';
+import { updateTodoDto } from './dto/update-todos.dto';
+import { JWTAuthGuard } from 'src/guards/auth/auth.guard';
 @Controller('todos')
+@UseGuards(JWTAuthGuard)
 export class TodosController {
 
     constructor(private readonly todos:Todos){}
@@ -13,7 +15,7 @@ export class TodosController {
     }
 
     @Post()
-    createTodo(@Body() todoDto:CreateTodoDto){
+    createTodo(@Body() todoDto:CreateTodosDto){
         return this.todos.addTodo(todoDto)
     }
     @Patch(':id')
@@ -22,7 +24,7 @@ export class TodosController {
         type:Number ,
         description:"id of the todo list " 
     })
-    updateTodo(@Param('id' , ParseIntPipe) id:number ,@Body() updateTodoDto:UpdateTodoDto ){
+    updateTodo(@Param('id' , ParseIntPipe) id:number ,@Body() updateTodoDto:updateTodoDto){
         return this.todos.updateTodo(id , updateTodoDto)
     }
 }

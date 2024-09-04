@@ -7,7 +7,6 @@ async function bootstrap() {
   .setTitle("todo list api docs")
   .setDescription("docs ")
   .setVersion('1.0')
-  .addTag('api')
   .build()
   app.setGlobalPrefix('api')
   const document = SwaggerModule.createDocument(app , config)

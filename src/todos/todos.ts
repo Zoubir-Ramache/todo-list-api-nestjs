@@ -1,22 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { CreateTodoDto } from './Dto/createTodoDto';
-import { UpdateTodoDto } from './Dto/updateTodoDto';
-import { InjectModel } from '@nestjs/sequelize';
-import { Todo } from './entities/todo.entity';
+import { Prisma } from '@prisma/client';
+import { Db } from 'src/db/db';
 @Injectable()
 export class Todos {
-  constructor(
-    @InjectModel(Todo)
-    private todoRepository: typeof Todo,
-  ) {}
+  constructor(private readonly db: Db) {}
 
-  getAllTodos() {
-    return this.todoRepository.findAll();
+  async getAllTodos() {
+    return await this.db.todos.findMany();
   }
-  addTodo(createTodoDto: CreateTodoDto) {
-    return this.todoRepository.create(createTodoDto as any);
+
+  async addTodo(createTodoDto: Prisma.TodosCreateInput) {
+    return this.db.todos.create({
+      data: createTodoDto,
+    });
   }
-  updateTodo(id: number, updateTodoDto: UpdateTodoDto) {
-    return id;
+
+  async updateTodo(id: number, updateTodoDto: Prisma.TodosUpdateInput) {
+    return this.db.todos.update({
+      where: {
+        id,
+      },
+      data: updateTodoDto,
+    });
   }
 }
