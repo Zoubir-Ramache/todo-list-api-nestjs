@@ -29,7 +29,14 @@ model User {
   password String
   firstName String 
   lastName String 
-  accessToken String @unique
-  refreshToken String @unique 
-  usertodos Todos[] 
+  refreshToken RefreshToken?  
+  usertodos Todos[]
+
+}
+model RefreshToken {
+  id String @id @default(uuid())
+  user User  @relation(fields: [userId] , references: [id])
+  userId String @unique
+  token String
+  expirationDate DateTime 
 }

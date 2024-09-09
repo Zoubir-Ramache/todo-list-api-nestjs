@@ -3,9 +3,9 @@ import { Todos } from './todos';
 import { ApiParam  } from '@nestjs/swagger';
 import { CreateTodosDto } from './dto/create-todos.dto';
 import { updateTodoDto } from './dto/update-todos.dto';
-import { JWTAuthGuard } from 'src/guards/auth/auth.guard';
+// import { JWTAuthGuard } from 'src/guards/auth/auth.guard';
 @Controller('todos')
-@UseGuards(JWTAuthGuard)
+// @UseGuards(JWTAuthGuard)
 export class TodosController {
 
     constructor(private readonly todos:Todos){}
