@@ -1,12 +1,12 @@
 import { Prisma } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsEmail } from 'class-validator';
 export class CreateSignUpDto implements Prisma.UserCreateInput {
   @ApiProperty({
     title: 'username',
   })
-  @IsString()
   @IsNotEmpty()
+  @IsEmail()
   username: string;
   @ApiProperty({
     title: 'password',

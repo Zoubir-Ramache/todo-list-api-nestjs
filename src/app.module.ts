@@ -3,12 +3,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TodosModule } from './todos/todos.module';
 import { DbModule } from './db/db.module';
-import { UserInfoModule } from './user-info/user-info.module';
 import { AuthModule } from './auth/auth.module';
 
 
 @Module({
-  imports: [TodosModule, DbModule,  UserInfoModule, AuthModule ],
+  imports: [TodosModule, DbModule,  AuthModule ],
   controllers: [AppController],
   providers: [AppService],
 })

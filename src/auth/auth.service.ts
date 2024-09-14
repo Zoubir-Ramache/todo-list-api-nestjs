@@ -3,12 +3,13 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { Db } from 'src/db/db';
 import { CreateSignUpDto } from './dto/create-sign-up.dto';
 import { CreateLoginDto } from './dto/create-login.dto';
-import { JwtService } from '@nestjs/jwt';
-import { Db } from 'src/db/db';
-import * as bcrypt from 'bcrypt';
-import { Prisma } from '@prisma/client';
+import { UserDto } from './dto/user.dto';
+import { JwtRequest } from 'src/types/jwt-request.interface';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +18,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  //! create user
   async createUser(createUserDto: CreateSignUpDto) {
     const { password, username } = createUserDto;
 
@@ -37,9 +39,12 @@ export class AuthService {
         ...createUserDto,
         password: hashedPassword,
       },
+      omit: {
+        password: true,
+      },
     });
 
-    const { accessToken, refreshToken } = this.generateUserTokens(user);
+    const { accessToken, refreshToken } = await this.generateUserTokens(user);
 
     return {
       user,
@@ -48,6 +53,7 @@ export class AuthService {
     };
   }
 
+  //! login
   async findUser(userDto: CreateLoginDto) {
     const user = await this.db.user.findFirst({
       where: {
@@ -56,30 +62,88 @@ export class AuthService {
     });
 
     this.verifyUser(userDto, user);
-    const { accessToken, refreshToken } = this.generateUserTokens(user);
+    const { accessToken, refreshToken } = await this.generateUserTokens(user);
+    const { password, ...userData } = user;
     return {
-      user,
+      user: userData,
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  //! get user info
+  async getUserInfo(req: JwtRequest) {
+    const id = req.user.userId;
+
+    const userInfo = await this.db.user.findFirst({
+      where: { id },
+      omit: {
+        password: true,
+      },
+    });
+
+    if (userInfo) {
+      return { ...userInfo };
+    }
+    throw new UnauthorizedException('user not found');
+  }
+
+  //! get refresh token
+  async getRefreshToken(req: JwtRequest) {
+    const authHeader = req.headers['authorization'] as string;
+    if (!authHeader) throw new UnauthorizedException(' token required');
+    const [Bearer, authToken] = authHeader.split('');
+    if (Bearer !== 'Bearer' || !authToken)
+      throw new UnauthorizedException(' invalid bearer token format');
+
+    const token = await this.db.refreshToken.findFirst({
+      where: {
+        token: authToken,
+        expirationDate: {
+          gte: new Date(),
+        },
+      },
+    });
+
+    if (!token) {
+      throw new UnauthorizedException('token expired or not found');
+    }
+    const user = {
+      id: req.user.userId,
+      username: req.user.username,
+    };
+    const { accessToken, refreshToken } = await this.generateUserTokens(user);
+    return {
       accessToken,
       refreshToken,
     };
   }
 
   private verifyUser(loginDto: CreateLoginDto, user: CreateLoginDto) {
-    const verifiedUser = bcrypt.compare(user.password, loginDto.password);
-    if (!verifiedUser) {
-      throw new UnauthorizedException(' wrong cridentials');
+    if (user) {
+      const verifiedUser = bcrypt.compare(user.password, loginDto.password);
+      if (verifiedUser) {
+        return;
+      }
     }
+    throw new UnauthorizedException(' wrong cridentials');
   }
-  private generateUserTokens(user: Prisma.UserCreateInput) {
+
+  private async generateUserTokens(user: { username: string; id: string }) {
     const payload = { username: user.username, sub: user.id };
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: '1h'
+      expiresIn: '1h',
     });
-    const refreshToken = this.jwtService.sign(payload );
+    const refreshToken = this.jwtService.sign(payload);
     const refreshTokenExpireDate = new Date();
     refreshTokenExpireDate.setDate(refreshTokenExpireDate.getDate() + 3);
-    this.db.refreshToken.create({
-      data: {
+    await this.db.refreshToken.upsert({
+      where: { userId: user.id },
+      update: {
+        token: refreshToken,
+        expirationDate: refreshTokenExpireDate,
+      },
+      create: {
         token: refreshToken,
         expirationDate: refreshTokenExpireDate,
         user: {
