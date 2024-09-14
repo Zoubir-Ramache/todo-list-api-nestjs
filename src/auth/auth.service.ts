@@ -8,7 +8,6 @@ import * as bcrypt from 'bcrypt';
 import { Db } from 'src/db/db';
 import { CreateSignUpDto } from './dto/create-sign-up.dto';
 import { CreateLoginDto } from './dto/create-login.dto';
-import { UserDto } from './dto/user.dto';
 import { JwtRequest } from 'src/types/jwt-request.interface';
 
 @Injectable()
@@ -63,9 +62,9 @@ export class AuthService {
 
     this.verifyUser(userDto, user);
     const { accessToken, refreshToken } = await this.generateUserTokens(user);
-    const { password, ...userData } = user;
+    delete user.password
     return {
-      user: userData,
+      user ,
       accessToken,
       refreshToken,
     };
