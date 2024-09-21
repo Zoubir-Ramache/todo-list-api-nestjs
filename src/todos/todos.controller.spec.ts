@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TodosController } from './todos.controller';
-import { JwtService } from '@nestjs/jwt';
 import { Todos } from './todos';
 import { Db } from 'src/db/db';
 describe('TodosController', () => {
@@ -9,7 +8,8 @@ describe('TodosController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TodosController],
-      providers:[Todos , {
+      providers:[Todos ,
+         {
         provide:Db , 
         useValue:{
           someMethod:jest.fn()

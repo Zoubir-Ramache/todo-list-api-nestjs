@@ -44,7 +44,7 @@ export class AuthService {
     });
 
     const { accessToken, refreshToken } = await this.generateUserTokens(user);
-
+    delete user.id
     return {
       user,
       accessToken,
@@ -63,6 +63,7 @@ export class AuthService {
     this.verifyUser(userDto, user);
     const { accessToken, refreshToken } = await this.generateUserTokens(user);
     delete user.password
+    delete user.id
     return {
       user ,
       accessToken,
@@ -78,6 +79,7 @@ export class AuthService {
       where: { id },
       omit: {
         password: true,
+        id:true
       },
     });
 

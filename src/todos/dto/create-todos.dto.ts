@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { ApiProperty } from "@nestjs/swagger";
-export class CreateTodosDto implements Prisma.TodosCreateInput{
+export class CreateTodosDto {
 
     @ApiProperty({
         title:"title", 
@@ -10,10 +10,7 @@ export class CreateTodosDto implements Prisma.TodosCreateInput{
         title:"content"
     })
     content: string;
-    @ApiProperty({
-        title:"owner"
-    })
-    owner: Prisma.UserCreateNestedOneWithoutUsertodosInput;
+    
 
 
 }

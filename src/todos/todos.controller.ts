@@ -1,9 +1,10 @@
-import { Controller , Post  , Body, Get, Patch, Param, ParseIntPipe , UseGuards} from '@nestjs/common';
+import { Controller , Post  , Body, Get, Patch, Param, ParseIntPipe , UseGuards, Req} from '@nestjs/common';
 import { Todos } from './todos';
 import { ApiParam, ApiTags  } from '@nestjs/swagger';
 import { CreateTodosDto } from './dto/create-todos.dto';
 import { updateTodoDto } from './dto/update-todos.dto';
 import { JWTAuthGuard } from 'src/auth/guards/auth.guard';
+import { JwtRequest } from 'src/types/jwt-request.interface';
 @UseGuards(JWTAuthGuard)
 @ApiTags("todos")
 @Controller('todos')
@@ -16,8 +17,10 @@ export class TodosController {
     }
 
     @Post()
-    createTodo(@Body() todoDto:CreateTodosDto){
-        return this.todos.addTodo(todoDto)
+    createTodo(@Body() todoDto:CreateTodosDto ){
+        
+        
+        return this.todos.addTodo(todoDto )
     }
     @Patch(':id')
     @ApiParam({
@@ -28,4 +31,5 @@ export class TodosController {
     updateTodo(@Param('id' , ParseIntPipe) id:number ,@Body() updateTodoDto:updateTodoDto){
         return this.todos.updateTodo(id , updateTodoDto)
     }
+
 }
